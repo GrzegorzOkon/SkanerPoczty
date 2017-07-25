@@ -10,14 +10,14 @@ public class Meil {
 	private final SimpleStringProperty odbiorcy;
 	private final SimpleStringProperty dataPrzes³ania;
 	private final SimpleStringProperty temat;
-	private final SimpleStringProperty treœæ;
+	private final SimpleStringProperty adresIP;
 	
-	public Meil(String nadawca, String odbiorcy, String dataPrzes³ania, String temat, String treœæ) {
+	public Meil(String nadawca, String odbiorcy, String dataPrzes³ania, String temat, String adresIP) {
 		this.nadawca = new SimpleStringProperty(nadawca);
 		this.odbiorcy = new SimpleStringProperty(odbiorcy);
 		this.dataPrzes³ania = new SimpleStringProperty(dataPrzes³ania);	
 		this.temat = new SimpleStringProperty(temat);
-		this.treœæ = new SimpleStringProperty(treœæ);		
+		this.adresIP = new SimpleStringProperty(adresIP);		
 	}
 
 	public String getNadawca() {
@@ -52,11 +52,11 @@ public class Meil {
     	this.temat.set(temat);
     }
 	
-	public String getTreœæ() {
-		return treœæ.get();
+	public String getAdresIP() {
+		return adresIP.get();
 	}
 
-    public void setTreœæ(String treœæ) {
-    	this.treœæ.set(treœæ);
+    public void setAdresIP(String adresIP) {
+    	this.adresIP.set(adresIP);
     }
 }

@@ -69,7 +69,7 @@ public class WidokWiadomoœci {
 	private TableColumn kolumnaOdbiorca;
 	private TableColumn kolumnaDataPrzes³ania;
 	private TableColumn kolumnaTemat;
-	private TableColumn kolumnaTreœæ;
+	private TableColumn kolumnaIP;
 	private ObservableList<Meil> dane;
 	private javafx.scene.control.ScrollPane panelPrzewijaniaWyników;
 	private FlowPane panelOdstêpuPodTabel¹;
@@ -123,10 +123,10 @@ public class WidokWiadomoœci {
 		panelDanychWyników = new BorderPane();
 		tabelaWyników = new TableView();
 		kolumnaEmail = new TableColumn("Nadawca");
-		kolumnaEmail.setMinWidth(400);
+		kolumnaEmail.setMinWidth(300);
 		kolumnaEmail.setCellValueFactory(new PropertyValueFactory<>("nadawca"));
 		kolumnaOdbiorca = new TableColumn("Odbiorca");
-		kolumnaOdbiorca.setMinWidth(400);
+		kolumnaOdbiorca.setMinWidth(300);
 		kolumnaOdbiorca.setCellValueFactory(new PropertyValueFactory<>("odbiorcy"));
 		kolumnaDataPrzes³ania = new TableColumn("Data przes³ania");
 		kolumnaDataPrzes³ania.setMinWidth(250);
@@ -134,9 +134,9 @@ public class WidokWiadomoœci {
 		kolumnaTemat = new TableColumn("Temat");
 		kolumnaTemat.setMinWidth(300);
 		kolumnaTemat.setCellValueFactory(new PropertyValueFactory<>("temat"));
-		kolumnaTreœæ = new TableColumn("Treœæ");
-		kolumnaTreœæ.setMinWidth(300);
-		kolumnaTreœæ.setCellValueFactory(new PropertyValueFactory<>("treœæ"));
+		kolumnaIP = new TableColumn("IP");
+		kolumnaIP.setMinWidth(130);
+		kolumnaIP.setCellValueFactory(new PropertyValueFactory<>("adresIP"));
 		
 		dane = FXCollections.observableArrayList();
 		
@@ -345,10 +345,8 @@ public class WidokWiadomoœci {
 		panelWiadomoœci.getChildren().add(panelDanychWyników);
 		//panelDanychWyników.getChildren().add(tabelaWyników);
 		panelDanychWyników.setCenter(tabelaWyników);
-		tabelaWyników.getColumns().addAll(kolumnaEmail, kolumnaOdbiorca, kolumnaDataPrzes³ania, kolumnaTemat, kolumnaTreœæ);
+		tabelaWyników.getColumns().addAll(kolumnaEmail, kolumnaOdbiorca, kolumnaDataPrzes³ania, kolumnaTemat, kolumnaIP);
 		tabelaWyników.setItems(dane);
-
-		//panelDanychWyników.getChildren().add(panelPrzewijaniaWyników);
 		
 		panelWiadomoœci.getChildren().add(panelOdstêpuPodTabel¹);
 		
