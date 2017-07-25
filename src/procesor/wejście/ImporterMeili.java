@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.mail.Address;
+import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
@@ -28,7 +30,15 @@ public class ImporterMeili {
         for (File plik : pliki) {
         	source = new FileInputStream(plik);
         	message = new MimeMessage(mailSession, source);
-        	listaMeili.add(new Meil("" + message.getFrom()[0], "" + message.getSentDate(), "" + message.getSubject(), "" + message.getContent().toString()));
+        	
+        	String odbiorcy = "";
+        	Address[] adresy = message.getRecipients(Message.RecipientType.TO);
+        	
+        	for (Address adres : adresy) {
+        	    odbiorcy += adres + "\n";
+        	}
+        	
+        	listaMeili.add(new Meil("" + message.getFrom()[0], odbiorcy, "" + message.getSentDate(), "" + message.getSubject(), "" + message.getContent().toString()));
         }
  
         return listaMeili;

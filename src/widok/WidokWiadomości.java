@@ -66,6 +66,7 @@ public class WidokWiadomoœci {
 	private BorderPane panelDanychWyników;
 	private TableView tabelaWyników;
 	private TableColumn kolumnaEmail;
+	private TableColumn kolumnaOdbiorca;
 	private TableColumn kolumnaDataPrzes³ania;
 	private TableColumn kolumnaTemat;
 	private TableColumn kolumnaTreœæ;
@@ -121,9 +122,12 @@ public class WidokWiadomoœci {
 		
 		panelDanychWyników = new BorderPane();
 		tabelaWyników = new TableView();
-		kolumnaEmail = new TableColumn("Od");
+		kolumnaEmail = new TableColumn("Nadawca");
 		kolumnaEmail.setMinWidth(400);
 		kolumnaEmail.setCellValueFactory(new PropertyValueFactory<>("nadawca"));
+		kolumnaOdbiorca = new TableColumn("Odbiorca");
+		kolumnaOdbiorca.setMinWidth(400);
+		kolumnaOdbiorca.setCellValueFactory(new PropertyValueFactory<>("odbiorcy"));
 		kolumnaDataPrzes³ania = new TableColumn("Data przes³ania");
 		kolumnaDataPrzes³ania.setMinWidth(250);
 		kolumnaDataPrzes³ania.setCellValueFactory(new PropertyValueFactory<>("dataPrzes³ania"));
@@ -341,7 +345,7 @@ public class WidokWiadomoœci {
 		panelWiadomoœci.getChildren().add(panelDanychWyników);
 		//panelDanychWyników.getChildren().add(tabelaWyników);
 		panelDanychWyników.setCenter(tabelaWyników);
-		tabelaWyników.getColumns().addAll(kolumnaEmail, kolumnaDataPrzes³ania, kolumnaTemat, kolumnaTreœæ);
+		tabelaWyników.getColumns().addAll(kolumnaEmail, kolumnaOdbiorca, kolumnaDataPrzes³ania, kolumnaTemat, kolumnaTreœæ);
 		tabelaWyników.setItems(dane);
 
 		//panelDanychWyników.getChildren().add(panelPrzewijaniaWyników);
