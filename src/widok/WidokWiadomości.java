@@ -9,7 +9,14 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.text.DateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -17,8 +24,13 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
+
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.*;
 import javafx.geometry.*;
 import javafx.scene.control.*;
@@ -51,14 +63,15 @@ public class WidokWiadomoœci {
 	private Label tekstOperatora;
 	private Label tekstWartoœci;
 	private VBox panelWartoœci;
-	private javafx.scene.layout.FlowPane panelWierszaDanych;
-	private javafx.scene.control.ComboBox comboNazwy;
-	private javafx.scene.control.ComboBox comboOperatora;
-	private javafx.scene.control.TextField poleWartoœci;
+	private FlowPane panelWierszaDanych;
+	private ComboBox poleNadawcy;
+	private ComboBox poleOperatora;
+	private DatePicker poleDaty;
+	private TextField poleDanych;
 	private javafx.scene.control.Button przyciskUsuñ;
 	private javafx.scene.control.CheckBox checkBoxAktywny;
 	private FlowPane panelprzyciskuWyszukaj;
-	private Button Wyszukaj;
+	private Button wyszukaj;
 	private FlowPane panelOdstêpuPodPrzyciskiem;
 	private FlowPane panelNag³ówkowyWyników;
 	private Label tekstNag³ówkowyWyników;
@@ -71,6 +84,7 @@ public class WidokWiadomoœci {
 	private TableColumn kolumnaTemat;
 	private TableColumn kolumnaIP;
 	private ObservableList<Meil> dane;
+	private FilteredList<Meil> przefiltrowaneDane;
 	private javafx.scene.control.ScrollPane panelPrzewijaniaWyników;
 	private FlowPane panelOdstêpuPodTabel¹;
 	private FlowPane panelDolny;
@@ -94,24 +108,290 @@ public class WidokWiadomoœci {
 		
 		panelOdstêpuPodFiltrem = new FlowPane();
 		
-		panelPodFiltrem = new javafx.scene.layout.FlowPane();		
+		panelPodFiltrem = new FlowPane();	
+		panelPodFiltrem.setHgap(300);
 		czcionkaPodFiltrem = new Font("Courier", 14);
-		tekstNazwyPola = new javafx.scene.control.Label("Nazwa pola");
-		tekstOperatora = new javafx.scene.control.Label("Operator     Wartoœæ");
-		tekstWartoœci = new javafx.scene.control.Label("Wartoœæ");		
+		tekstNazwyPola = new Label("Nazwa pola");
+		tekstOperatora = new Label("Operator");
+		tekstWartoœci = new Label("Wartoœæ");		
 		
 		panelWartoœci = new VBox();		
-		panelWierszaDanych = new javafx.scene.layout.FlowPane();
-		String[] tekstyNazw = { "Nadawca" };
-		comboNazwy = new javafx.scene.control.ComboBox();
-		String[] tekstyOperatorów = { "ZAWIERA" };
-		comboOperatora = new javafx.scene.control.ComboBox();
-		poleWartoœci = new javafx.scene.control.TextField();
-		przyciskUsuñ = new javafx.scene.control.Button("Usuñ");
-		checkBoxAktywny = new javafx.scene.control.CheckBox("Aktywny");
+		panelWierszaDanych = new FlowPane();
+		panelWierszaDanych.setHgap(7);
+
+		poleNadawcy = new ComboBox();
+		poleNadawcy.setPrefSize(380, 25);
+		poleNadawcy.setStyle("-fx-background-color: #CECECE");
+		poleNadawcy.getItems().addAll("Nadawca", "Odbiorca", "Data przes³ania", "Temat", "IP");
+		poleNadawcy.setValue("Odbiorca");
+		poleNadawcy.valueProperty().addListener(new ChangeListener<String>() {
+            @Override 
+            public void changed(ObservableValue ov, String t, String t1) { 
+            	switch (t1) {
+            		case "Nadawca": 
+            			poleOperatora.getItems().clear();
+            			poleOperatora.getItems().addAll("=", "ZAWIERA"); 
+            			poleOperatora.setValue("=");    
+            			panelWierszaDanych.getChildren().remove(2);
+            			panelWierszaDanych.getChildren().add(2, poleDanych);
+            			break;
+            		case "Odbiorca" : 
+            			poleOperatora.getItems().clear();
+            			poleOperatora.getItems().addAll("=", "ZAWIERA"); 
+            			poleOperatora.setValue("=");  
+            			panelWierszaDanych.getChildren().remove(2);
+            			panelWierszaDanych.getChildren().add(2, poleDanych);
+            			break;
+            		case "Data przes³ania" : 
+            			poleOperatora.getItems().clear();
+            			poleOperatora.getItems().addAll(">", ">=", "<", "<="); 
+            			poleOperatora.setValue(">="); 
+            			panelWierszaDanych.getChildren().remove(2);
+            			panelWierszaDanych.getChildren().add(2, poleDaty);
+            			break;
+            		case "Temat" : 
+            			poleOperatora.getItems().clear();
+            			poleOperatora.getItems().addAll("=", "ZAWIERA"); 
+            			poleOperatora.setValue("="); 
+            			panelWierszaDanych.getChildren().remove(2);
+            			panelWierszaDanych.getChildren().add(2, poleDanych);
+            			break;
+            		case "IP" : 
+            			poleOperatora.getItems().clear();
+            			poleOperatora.getItems().addAll("=", "ZAWIERA"); 
+            			poleOperatora.setValue("="); 
+            			panelWierszaDanych.getChildren().remove(2);
+            			panelWierszaDanych.getChildren().add(2, poleDanych);
+            			break;
+            	};         
+            }    
+        });
+		poleOperatora = new ComboBox();
+		poleOperatora.setPrefSize(110, 25);
+		poleOperatora.setStyle("-fx-background-color: #CECECE");
+		poleDaty = new DatePicker();
+		poleDaty.setPrefSize(365, 25);
+		poleDaty.setOnAction(new EventHandler() {
+		     public void handle(Event t) {
+		         LocalDate date = poleDaty.getValue();
+		     }
+		 });
+		poleDaty.setEditable(false);
+		poleDanych = new TextField();
+		poleDanych.setPrefSize(365, 25);
+		przyciskUsuñ = new Button("Usuñ");
+		checkBoxAktywny = new CheckBox("Aktywny");
+		checkBoxAktywny.setSelected(true);
 		
 		panelprzyciskuWyszukaj = new FlowPane();
-		Wyszukaj = new Button("Wyszukaj");
+		wyszukaj = new Button("Wyszukaj");
+		wyszukaj.setOnAction((event) -> {		    
+			przefiltrowaneDane = new FilteredList<>(dane);
+			
+			if (poleNadawcy.getSelectionModel().getSelectedItem().equals("Nadawca")) {
+				if (poleOperatora.getSelectionModel().getSelectedItem().equals("=")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+		                // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+		                if (poleDanych.getText().equals("")) {
+		                    return true;
+		                }
+
+		                // Porównaj nadawcê z ka¿dym wierszem filtrowanego tekstu.
+		                String lowerCaseFilter = poleDanych.getText().toLowerCase();
+
+		                if (meil.getNadawca().toLowerCase().equals(lowerCaseFilter)) {
+		                    return true; // Filtr przypasowuje tekst.
+		                } 
+		                return false; // Nie spelania wymagañ.
+		            });					
+				} else if (poleOperatora.getSelectionModel().getSelectedItem().equals("ZAWIERA")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+		                // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+		                if (poleDanych.getText().equals("")) {
+		                    return true;
+		                }
+
+		                // Porównaj nadawcê z ka¿dym wierszem filtrowanego tekstu.
+		                String lowerCaseFilter = poleDanych.getText().toLowerCase();
+
+		                if (meil.getNadawca().toLowerCase().contains(lowerCaseFilter)) {
+		                    return true; // Filtr przypasowuje tekst.
+		                } 
+		                return false; // Nie spelania wymagañ.
+		            });	
+				}
+			} else if (poleNadawcy.getSelectionModel().getSelectedItem().equals("Odbiorca")) {
+				if (poleOperatora.getSelectionModel().getSelectedItem().equals("=")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+		                // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+		                if (poleDanych.getText().equals("")) {
+		                    return true;
+		                }
+
+		                String lowerCaseFilter = poleDanych.getText().toLowerCase();
+
+		                if (meil.getOdbiorcy().toLowerCase().equals(lowerCaseFilter)) {
+		                    return true; // Filtr przypasowuje tekst.
+		                } 
+		                return false; // Nie spelania wymagañ.
+		            });					
+				} else if (poleOperatora.getSelectionModel().getSelectedItem().equals("ZAWIERA")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+		                // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+		                if (poleDanych.getText().equals("")) {
+		                    return true;
+		                }
+
+		                String lowerCaseFilter = poleDanych.getText().toLowerCase();
+
+		                if (meil.getOdbiorcy().toLowerCase().contains(lowerCaseFilter)) {
+		                    return true; // Filtr przypasowuje tekst.
+		                } 
+		                return false; // Nie spelania wymagañ.
+		            });	
+				}
+			} else if (poleNadawcy.getSelectionModel().getSelectedItem().equals("Data przes³ania")) {
+				if (poleOperatora.getSelectionModel().getSelectedItem().equals(">")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+		                // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+		                if (poleDaty.getValue().equals("")) {
+		                    return true;
+		                }
+
+		                LocalDate filtrDaty = poleDaty.getValue();
+		                String przes³anaData = meil.getDataPrzes³ania().substring(4, 10) + " " + meil.getDataPrzes³ania().substring(25, 29);
+
+		                Locale l = Locale.US ;
+		                DateTimeFormatter f = DateTimeFormatter.ofPattern( "MMM d yyyy" , l );
+		                LocalDate localDate = LocalDate.parse( przes³anaData , f );
+		                
+		                if (localDate.isAfter(filtrDaty)) {
+		                    return true; // Filtr przypasowuje tekst.
+		                } 
+		                return false; // Nie spelania wymagañ.
+		            });					
+				} else if (poleOperatora.getSelectionModel().getSelectedItem().equals(">=")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+			            // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+						if (poleDaty.getValue().equals("")) {
+							return true;
+			            }
+
+			            LocalDate filtrDaty = poleDaty.getValue();
+			            String przes³anaData = meil.getDataPrzes³ania().substring(4, 10) + " " + meil.getDataPrzes³ania().substring(25, 29);
+
+			            Locale l = Locale.US ;
+			            DateTimeFormatter f = DateTimeFormatter.ofPattern( "MMM d yyyy" , l );
+			            LocalDate localDate = LocalDate.parse( przes³anaData , f );
+			                
+			            if (localDate.isAfter(filtrDaty) || localDate.isEqual(filtrDaty)) {
+			            	return true; // Filtr przypasowuje tekst.
+			            } 
+			            return false; // Nie spelania wymagañ.
+			        });		
+				} else if (poleOperatora.getSelectionModel().getSelectedItem().equals("<")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+			            // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+						if (poleDaty.getValue().equals("")) {
+							return true;
+			            }
+
+			            LocalDate filtrDaty = poleDaty.getValue();
+			            String przes³anaData = meil.getDataPrzes³ania().substring(4, 10) + " " + meil.getDataPrzes³ania().substring(25, 29);
+
+			            Locale l = Locale.US ;
+			            DateTimeFormatter f = DateTimeFormatter.ofPattern( "MMM d yyyy" , l );
+			            LocalDate localDate = LocalDate.parse( przes³anaData , f );
+			                
+			            if (localDate.isBefore(filtrDaty)) {
+			            	return true; // Filtr przypasowuje tekst.
+			            } 
+			            return false; // Nie spelania wymagañ.
+					});	
+				} else if (poleOperatora.getSelectionModel().getSelectedItem().equals("<=")) {
+					  przefiltrowaneDane.setPredicate(meil-> {
+				      // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+					  if (poleDaty.getValue().equals("")) {
+					      return true;
+				      }
+
+				      LocalDate filtrDaty = poleDaty.getValue();
+				      String przes³anaData = meil.getDataPrzes³ania().substring(4, 10) + " " + meil.getDataPrzes³ania().substring(25, 29);
+
+				      Locale l = Locale.US ;
+				      DateTimeFormatter f = DateTimeFormatter.ofPattern( "MMM d yyyy" , l );
+				      LocalDate localDate = LocalDate.parse( przes³anaData , f );
+				                
+				      if (localDate.isBefore(filtrDaty) || localDate.isEqual(filtrDaty)) {
+				          return true; // Filtr przypasowuje tekst.
+				      } 
+				      return false; // Nie spelania wymagañ.
+				  });
+				}
+			} else if (poleNadawcy.getSelectionModel().getSelectedItem().equals("Temat")) {
+				if (poleOperatora.getSelectionModel().getSelectedItem().equals("=")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+		                // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+		                if (poleDanych.getText().equals("")) {
+		                    return true;
+		                }
+
+		                String lowerCaseFilter = poleDanych.getText().toLowerCase();
+
+		                if (meil.getTemat().toLowerCase().equals(lowerCaseFilter)) {
+		                    return true; // Filtr przypasowuje tekst.
+		                } 
+		                return false; // Nie spelania wymagañ.
+		            });					
+				} else if (poleOperatora.getSelectionModel().getSelectedItem().equals("ZAWIERA")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+		                // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+		                if (poleDanych.getText().equals("")) {
+		                    return true;
+		                }
+
+		                String lowerCaseFilter = poleDanych.getText().toLowerCase();
+
+		                if (meil.getTemat().toLowerCase().contains(lowerCaseFilter)) {
+		                    return true; // Filtr przypasowuje tekst.
+		                } 
+		                return false; // Nie spelania wymagañ.
+		            });	
+				}
+			} else if (poleNadawcy.getSelectionModel().getSelectedItem().equals("IP")) {
+				if (poleOperatora.getSelectionModel().getSelectedItem().equals("=")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+		                // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+		                if (poleDanych.getText().equals("")) {
+		                    return true;
+		                }
+
+		                String lowerCaseFilter = poleDanych.getText().toLowerCase();
+
+		                if (meil.getAdresIP().toLowerCase().equals(lowerCaseFilter)) {
+		                    return true; // Filtr przypasowuje tekst.
+		                } 
+		                return false; // Nie spelania wymagañ.
+		            });					
+				} else if (poleOperatora.getSelectionModel().getSelectedItem().equals("ZAWIERA")) {
+					przefiltrowaneDane.setPredicate(meil-> {
+		                // Je¿eli filtr jest pusty wyœwietl wszystkie dane
+		                if (poleDanych.getText().equals("")) {
+		                    return true;
+		                }
+
+		                String lowerCaseFilter = poleDanych.getText().toLowerCase();
+
+		                if (meil.getAdresIP().toLowerCase().contains(lowerCaseFilter)) {
+		                    return true; // Filtr przypasowuje tekst.
+		                } 
+		                return false; // Nie spelania wymagañ.
+		            });	
+				}
+			}
+			
+			tabelaWyników.setItems(przefiltrowaneDane);
+		});
 		
 		panelOdstêpuPodPrzyciskiem = new FlowPane();
 		
@@ -208,8 +488,8 @@ public class WidokWiadomoœci {
 		panelprzyciskuWyszukaj.setMinHeight(panelprzyciskuWyszukaj.getPrefHeight());
 		panelprzyciskuWyszukaj.setAlignment(Pos.CENTER_RIGHT);	
 		panelprzyciskuWyszukaj.setPadding(new Insets(0, 7, 0, 0));
-		Wyszukaj.setPrefSize(200, 40);
-		Wyszukaj.setFont(czcionkaPodFiltrem);
+		wyszukaj.setPrefSize(200, 40);
+		wyszukaj.setFont(czcionkaPodFiltrem);
 		//Wyszukaj.setStyle("-fx-background-color: #CECECE;");
 		//tekstNazwyPola.setFont(czcionkaPodFiltrem);
 		//tekstNazwyPola.setTextFill(Color.BLACK);
@@ -259,14 +539,7 @@ public class WidokWiadomoœci {
 		panelDanychWyników.setMaximumSize(panelDanychWyników.getPreferredSize());
 		//panelDanychWyników.setOpaque(true);*/
 		
-		//tabelaWyników
-		/*tabelaWyników.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [1][4],
-                new String [] {
-                    "Nadawca", "Nag³ówek 2", "Nag³ówek 3", "..."
-                }
-            )); 
-		tabelaWyników.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		/*tabelaWyników.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		tabelaWyników.getColumnModel().getColumn(0).setPreferredWidth(200);
 		tabelaWyników.getColumnModel().getColumn(1).setPreferredWidth(150);
 		tabelaWyników.getColumnModel().getColumn(2).setPreferredWidth(250);
@@ -323,17 +596,19 @@ public class WidokWiadomoœci {
 		panelWiadomoœci.getChildren().add(panelPodFiltrem);
 		panelPodFiltrem.getChildren().add(tekstNazwyPola);
 		panelPodFiltrem.getChildren().add(tekstOperatora);
+		panelPodFiltrem.getChildren().add(tekstWartoœci);
 		
 		panelWiadomoœci.getChildren().add(panelWartoœci);
 		panelWartoœci.getChildren().add(panelWierszaDanych);
-		panelWierszaDanych.getChildren().add(comboNazwy);
-		panelWierszaDanych.getChildren().add(comboOperatora);
-		panelWierszaDanych.getChildren().add(poleWartoœci);
-		panelWierszaDanych.getChildren().add(przyciskUsuñ);
+		panelWierszaDanych.getChildren().add(poleNadawcy);
+		panelWierszaDanych.getChildren().add(poleOperatora);
+		panelWierszaDanych.getChildren().add(poleDanych);
+		//panelWierszaDanych.getChildren().add(poleDaty);
+		//panelWierszaDanych.getChildren().add(przyciskUsuñ);
 		panelWierszaDanych.getChildren().add(checkBoxAktywny);
 		
 		panelWiadomoœci.getChildren().add(panelprzyciskuWyszukaj);
-		panelprzyciskuWyszukaj.getChildren().add(Wyszukaj);
+		panelprzyciskuWyszukaj.getChildren().add(wyszukaj);
 		
 		panelWiadomoœci.getChildren().add(panelOdstêpuPodPrzyciskiem);
 		
